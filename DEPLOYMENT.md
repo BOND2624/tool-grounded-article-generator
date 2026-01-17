@@ -18,6 +18,7 @@
    - **Name:** `tool-grounded-article-generator-backend` (or your preferred name)
    - **Root Directory:** `backend`
    - **Environment:** `Python 3`
+   - **Python Version:** `3.11` or `3.12` (recommended - has better wheel support)
    - **Build Command:** `pip install -r requirements.txt`
    - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
@@ -72,11 +73,13 @@
 
 ## Important Notes
 
+- **Python Version:** The `backend/runtime.txt` file specifies Python 3.11.9 for better compatibility with pre-built wheels
 - **Backend Auto-Deploy:** Render will auto-deploy on every push to your main branch
 - **Free Tier Limits:** Render free tier services spin down after 15 minutes of inactivity
 - **Environment Variables:** Keep API keys secure - never commit them to Git
 - **Build Time:** First deployment may take 5-10 minutes
 - **Cold Starts:** Free tier services may have cold start delays (~30 seconds)
+- **Wheel Support:** Using Python 3.11 ensures all packages have pre-built wheels, avoiding Rust compilation issues
 
 ## Alternative: Deploy Both as Web Services
 
