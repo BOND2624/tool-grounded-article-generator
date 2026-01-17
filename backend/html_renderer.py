@@ -36,7 +36,7 @@ def render_article_html(article_json: Dict[str, Any], seo_json: Dict[str, Any]) 
         
         # Convert content to paragraphs (split by double newlines)
         paragraphs = [p.strip() for p in content.split("\n\n") if p.strip()]
-        content_html = "\n      ".join([f"<p>{escape_html(p)}</p>" for p in paragraphs])
+        content_html = "\n      ".join([f"<p>{convert_markdown_to_html(p)}</p>" for p in paragraphs])
         
         # Build sources HTML
         sources_html = ""
@@ -55,7 +55,7 @@ def render_article_html(article_json: Dict[str, Any], seo_json: Dict[str, Any]) 
         
         sections_html += f"""
     <section>
-      <h2>{escape_html(heading)}</h2>
+      <h2>{convert_markdown_to_html(heading)}</h2>
       {content_html}
       {sources_html}
     </section>"""
@@ -67,7 +67,7 @@ def render_article_html(article_json: Dict[str, Any], seo_json: Dict[str, Any]) 
         summary_html = f"""
     <div class="summary">
       <h3>Summary</h3>
-      <p>{escape_html(summary)}</p>
+      <p>{convert_markdown_to_html(summary)}</p>
     </div>"""
     
     # Complete HTML document
@@ -154,6 +154,46 @@ def render_article_html(article_json: Dict[str, Any], seo_json: Dict[str, Any]) 
 </html>"""
     
     return html
+
+
+def convert_markdown_to_html(text: str) -> str:
+    """
+    Convert markdown formatting to HTML, then escape remaining HTML special characters
+    Handles: **bold**, *italic*, etc.
+    """
+    if not text:
+        return ""
+    
+    import re
+    
+    # Convert **text** to <strong>text</strong> (bold) - handle multiple in one line
+    text = re.sub(r'\*\*([^*]+?)\*\*', r'<strong>\1</strong>', text)
+    
+    # Convert *text* to <em>text</em> (italic) - but not if it's part of **
+    # Match single asterisks that aren't adjacent to another asterisk
+    text = re.sub(r'(?<!\*)\*([^*]+?)\*(?!\*)', r'<em>\1</em>', text)
+    
+    # Now escape HTML special characters, but preserve our formatting tags
+    # Use placeholders to protect our HTML tags during escaping
+    text = text.replace('<strong>', '___STRONG_OPEN___')
+    text = text.replace('</strong>', '___STRONG_CLOSE___')
+    text = text.replace('<em>', '___EM_OPEN___')
+    text = text.replace('</em>', '___EM_CLOSE___')
+    
+    # Escape HTML
+    text = text.replace("&", "&amp;")
+    text = text.replace("<", "&lt;")
+    text = text.replace(">", "&gt;")
+    text = text.replace('"', "&quot;")
+    text = text.replace("'", "&#x27;")
+    
+    # Restore our formatting tags
+    text = text.replace('___STRONG_OPEN___', '<strong>')
+    text = text.replace('___STRONG_CLOSE___', '</strong>')
+    text = text.replace('___EM_OPEN___', '<em>')
+    text = text.replace('___EM_CLOSE___', '</em>')
+    
+    return text
 
 
 def escape_html(text: str) -> str:

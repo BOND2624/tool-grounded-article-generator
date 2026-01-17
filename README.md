@@ -1,119 +1,113 @@
 # Tool-Grounded Article Generator
 
-A lightweight full-stack application that allows authenticated users to generate high-quality, structured articles using AI with web search grounding and optional URL context.
+A full-stack application that generates high-quality, structured articles using AI with web search grounding. Built with FastAPI (backend) and Next.js (frontend).
 
-## Tech Stack
+## Features
 
-- **Backend**: FastAPI, Python, JWT Auth, Ollama (local LLM)
-- **Frontend**: Next.js, React, Tailwind CSS
+- AI-powered article generation with web search grounding
+- Structured JSON output (Article JSON + SEO Metadata)
+- HTML rendering for articles
+- JWT-based authentication
+- Automatic fallback to OpenRouter when Gemini quota is exhausted
+- Source URL extraction and redirect resolution
+
+## Prerequisites
+
+- Python 3.8+
+- Node.js 18+
+- npm or yarn
+
+## Setup Instructions
+
+### Backend Setup
+
+1. Navigate to the backend directory:
+```bash
+cd backend
+```
+
+2. Create a virtual environment (optional but recommended):
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install Python dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+4. Create a `.env` file in the `backend` directory:
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+OPENROUTER_MODEL=xiaomi/mimo-v2-flash:free
+JWT_SECRET_KEY=your_secret_key_here
+```
+
+5. Get API keys:
+   - Gemini API key: https://makersuite.google.com/app/apikey
+   - OpenRouter API key: https://openrouter.ai/keys
+
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+## Running the Project Locally
+
+### Start the Backend
+
+1. From the `backend` directory:
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+The backend will be available at `http://localhost:8000`
+
+### Start the Frontend
+
+1. From the `frontend` directory:
+```bash
+npm run dev
+```
+
+The frontend will be available at `http://localhost:3000`
+
+## Default Credentials
+
+- Username: `admin`
+- Password: `admin123`
+
+## Usage
+
+1. Open `http://localhost:3000` in your browser
+2. Login with the default credentials
+3. Enter your article prompt
+4. Optionally provide a reference URL
+5. Click "Generate Article"
+6. View, regenerate, or download the generated article
 
 ## Project Structure
 
 ```
-.
-├── backend/          # FastAPI backend
-├── frontend/         # Next.js frontend
-└── README.md
+tool-grounded-article-generator/
+├── backend/
+│   ├── main.py              # FastAPI application
+│   ├── gemini_service.py    # AI article generation
+│   ├── html_renderer.py     # HTML rendering
+│   ├── auth.py              # Authentication
+│   └── requirements.txt     # Python dependencies
+└── frontend/
+    ├── app/                 # Next.js pages
+    ├── components/          # React components
+    ├── lib/                 # API client & utilities
+    └── package.json         # Node dependencies
 ```
-
-## Getting Started
-
-### Backend Setup
-
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### Frontend Setup
-
-```bash
-cd frontend
-npm install
-```
-
-## Development
-
-### Backend
-
-```bash
-cd backend
-uvicorn main:app --reload --port 8000
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm run dev
-```
-
-## Environment Variables
-
-### Backend
-
-Create `backend/.env`:
-```
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3.2
-JWT_SECRET_KEY=your_secret_key_change_in_production
-JWT_ALGORITHM=HS256
-JWT_EXPIRATION_HOURS=24
-```
-
-**Note**: 
-- Make sure Ollama is installed and running locally: https://ollama.ai
-- Pull a model: `ollama pull llama3.2` (or llama3, mistral, etc.)
-- Default model is `llama3.2` but can be changed in `.env`
-
-### Frontend
-
-Create `frontend/.env.local`:
-```
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-## Default Credentials
-
-- **Username**: `admin`
-- **Password**: `admin123`
-
-**Note**: These are hardcoded for development. In production, implement proper user management.
-
-## Features
-
-✅ JWT-based authentication  
-✅ Article generation with AI (Ollama local models)  
-✅ Optional reference URL context  
-✅ SEO metadata generation  
-✅ HTML rendering and download  
-✅ Article regeneration with refinement prompts  
-✅ Protected routes (frontend and backend)  
-✅ Modern UI with Tailwind CSS  
-
-## API Endpoints
-
-- `POST /auth/login` - Login and get JWT token
-- `GET /auth/me` - Get current user info (protected)
-- `POST /generate` - Generate article (protected)
-- `POST /regenerate` - Regenerate article with refinements (protected)
-
-## Testing
-
-1. Start the backend:
-   ```bash
-   cd backend
-   uvicorn main:app --reload --port 8000
-   ```
-
-2. Start the frontend:
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-
-3. Open http://localhost:3000 in your browser
-4. Login with default credentials
-5. Generate your first article!

@@ -84,6 +84,9 @@ export const generateArticle = async (request: GenerateRequest): Promise<Generat
     throw new Error('Not authenticated');
   }
 
+  console.log('Calling generate endpoint:', `${API_URL}/generate`);
+  console.log('Request payload:', request);
+
   const response = await fetch(`${API_URL}/generate`, {
     method: 'POST',
     headers: {
@@ -93,8 +96,11 @@ export const generateArticle = async (request: GenerateRequest): Promise<Generat
     body: JSON.stringify(request),
   });
 
+  console.log('Response status:', response.status);
+
   if (!response.ok) {
-    const error = await response.json();
+    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
+    console.error('Generation error:', error);
     throw new Error(error.detail || 'Generation failed');
   }
 

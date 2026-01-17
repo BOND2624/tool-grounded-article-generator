@@ -14,10 +14,22 @@ from html_renderer import render_article_html
 
 app = FastAPI(title="Tool-Grounded Article Generator API", version="1.0.0")
 
-# CORS middleware
+# CORS middleware - allow frontend URL from environment or default to localhost
+import os
+frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+cors_origins = [
+    "http://localhost:3000",
+    frontend_url
+]
+# Add https version if http is provided
+if frontend_url.startswith("http://"):
+    cors_origins.append(frontend_url.replace("http://", "https://"))
+elif frontend_url.startswith("https://"):
+    cors_origins.append(frontend_url.replace("https://", "http://"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js default port
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -106,12 +118,20 @@ async def generate(
     Generate an article with web search grounding
     Requires authentication
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     try:
+        logger.info(f"Received generate request from user: {current_user.get('sub')}")
+        logger.info(f"Prompt: {request.prompt[:100]}...")
+        
         # Generate article using Gemini
         result = await generate_article(
             prompt=request.prompt,
             reference_url=request.reference_url
         )
+        
+        logger.info("Article generated successfully")
         
         # Render HTML
         rendered_html = render_article_html(
@@ -127,6 +147,7 @@ async def generate(
         )
         
     except Exception as e:
+        logger.error(f"Error generating article: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating article: {str(e)}"

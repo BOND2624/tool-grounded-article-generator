@@ -29,13 +29,19 @@ function GenerateContent() {
     setLoading(true);
     setResult(null);
 
+    console.log('Starting article generation...');
+    console.log('Prompt:', prompt);
+    console.log('Reference URL:', referenceUrl);
+
     try {
       const response = await generateArticle({
         prompt,
         reference_url: referenceUrl || undefined,
       });
+      console.log('Article generated successfully:', response);
       setResult(response);
     } catch (err: any) {
+      console.error('Generation error:', err);
       setError(err.message || 'Failed to generate article');
     } finally {
       setLoading(false);
@@ -204,30 +210,90 @@ function GenerateContent() {
                   </div>
 
                   <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {result.article_json.sections.map((section, idx) => (
-                      <div key={idx} className="border-b pb-4 last:border-b-0">
-                        <h4 className="font-semibold text-gray-800 mb-2">
-                          {section.heading}
-                        </h4>
-                        <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                          {section.content}
-                        </p>
-                        {section.sources && section.sources.length > 0 && (
-                          <div className="mt-2">
-                            <p className="text-xs font-medium text-gray-500 mb-1">Sources:</p>
-                            <ul className="text-xs text-blue-600 space-y-1">
-                              {section.sources.map((source, sIdx) => (
-                                <li key={sIdx}>
-                                  <a href={source} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                                    {source}
-                                  </a>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                    {result.article_json.sections && result.article_json.sections.length > 0 ? (
+                      result.article_json.sections.map((section, idx) => (
+                        <div key={idx} className="border-b pb-4 last:border-b-0">
+                          <h4 className="font-semibold text-gray-800 mb-2">
+                            {section.heading || 'Untitled Section'}
+                          </h4>
+                          <p 
+                            className="text-sm text-gray-700 whitespace-pre-wrap"
+                            dangerouslySetInnerHTML={{
+                              __html: (() => {
+                                let content = section.content || 'No content available';
+                                // Escape HTML first
+                                content = content
+                                  .replace(/&/g, '&amp;')
+                                  .replace(/</g, '&lt;')
+                                  .replace(/>/g, '&gt;')
+                                  .replace(/"/g, '&quot;')
+                                  .replace(/'/g, '&#x27;');
+                                // Convert markdown to HTML
+                                content = content.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+                                content = content.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
+                                // Restore HTML tags we just added
+                                content = content.replace(/&lt;strong&gt;/g, '<strong>');
+                                content = content.replace(/&lt;\/strong&gt;/g, '</strong>');
+                                content = content.replace(/&lt;em&gt;/g, '<em>');
+                                content = content.replace(/&lt;\/em&gt;/g, '</em>');
+                                return content;
+                              })()
+                            }}
+                          />
+                          {section.sources && section.sources.length > 0 && (
+                            <div className="mt-2">
+                              <p className="text-xs font-medium text-gray-500 mb-1">
+                                Sources for "{section.heading || 'this section'}":
+                              </p>
+                              <ul className="text-xs space-y-1.5">
+                                {section.sources.map((source, sIdx) => {
+                                  // Format URL for display - extract domain and show readable format
+                                  let displayText = source;
+                                  let domain = '';
+                                  try {
+                                    const url = new URL(source);
+                                    domain = url.hostname.replace('www.', '');
+                                    // Show domain + first part of path
+                                    const pathParts = url.pathname.split('/').filter(p => p);
+                                    const path = pathParts.length > 0 
+                                      ? '/' + pathParts[0] + (pathParts.length > 1 ? '/...' : '')
+                                      : '';
+                                    displayText = domain + path;
+                                  } catch {
+                                    // If URL parsing fails, just truncate
+                                    if (source.length > 60) {
+                                      displayText = source.substring(0, 60) + '...';
+                                    }
+                                  }
+                                  
+                                  return (
+                                    <li key={sIdx} className="flex items-start gap-2">
+                                      <span className="text-gray-400 mt-0.5">•</span>
+                                      <a 
+                                        href={source} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-blue-600 hover:text-blue-800 hover:underline break-all flex-1"
+                                        title={`${source} - Reference for: ${section.heading || 'this section'}`}
+                                      >
+                                        <span className="font-medium">{domain}</span>
+                                        {displayText !== domain && (
+                                          <span className="text-gray-600">{displayText.replace(domain, '')}</span>
+                                        )}
+                                      </a>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center text-gray-500 py-8">
+                        <p>No sections available. The article structure may be incomplete.</p>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
 
@@ -245,7 +311,7 @@ function GenerateContent() {
                     </div>
                     <div>
                       <span className="font-medium text-gray-700">Keywords:</span>
-                      <p className="text-gray-600">{result.seo_json.keywords.join(', ')}</p>
+                      <p className="text-gray-600">{result.seo_json.keywords && result.seo_json.keywords.length > 0 ? result.seo_json.keywords.join(', ') : 'None'}</p>
                     </div>
                     {result.seo_json.canonical_url && (
                       <div>
