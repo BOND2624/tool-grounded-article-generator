@@ -1,23 +1,18 @@
 services:
   - type: web
     name: article-generator-backend
-    env: python
-    # Requested runtime; Render may still require UI selection for exact minor version.
-    runtime: python3.11
+    env: docker
     branch: main
     root: backend
-    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
-    startCommand: gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:$PORT
+    dockerfilePath: backend/Dockerfile
     autoDeploy: true
 
   - type: web
     name: article-generator-frontend
     env: node
-    # Example node runtime; UI may be required to pick exact version.
-    runtime: node18
     branch: main
     root: frontend
     buildCommand: npm install && npm run build
-    startCommand: npm run start
+    startCommand: npm run dev
     autoDeploy: true
 
