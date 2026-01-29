@@ -1,0 +1,51 @@
+.container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.content {
+  padding: 0;
+}
+
+.content :global(.container) {
+  max-width: 100%;
+  padding: 20px;
+}
+
+.content :global(h1) {
+  font-size: 2em;
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.content :global(h2) {
+  font-size: 1.5em;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  color: #34495e;
+}
+
+.content :global(p) {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+.content :global(a) {
+  color: #3498db;
+  text-decoration: none;
+}
+
+.content :global(a:hover) {
+  text-decoration: underline;
+}
+
+.content :global(ul) {
+  margin-left: 20px;
+  margin-bottom: 15px;
+}
+
+.content :global(li) {
+  margin-bottom: 8px;
+}
